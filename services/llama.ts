@@ -1,5 +1,6 @@
 import { buildInterviewPrompt } from "@/utils/promptBuilder";
 import { generateInterviewResponseSchema } from "@/lib/validation";
+import { validateInterviewResponse } from "@/lib/validateInterviewResponse";
 import type {
   GenerateInterviewRequest,
   GenerateInterviewResponse,
@@ -22,7 +23,7 @@ import type {
  * validation logic below is provider-agnostic.
  */
 
-const MAX_GENERATION_ATTEMPTS = 2; // initial attempt + 1 automatic retry
+const MAX_GENERATION_ATTEMPTS = 4; // initial attempt + up to 3 automatic retries
 
 export type LlamaErrorType =
   | "config"
@@ -75,16 +76,24 @@ function getLlamaConfig(): LlamaConfig {
     );
   }
 
-  const maxTokens = Number(process.env.LLAMA_MAX_TOKENS ?? 2048);
-  const temperature = Number(process.env.LLAMA_TEMPERATURE ?? 0.7);
+  // 1800 comfortably covers a 3-question response (summary + 3x
+  // question/idealAnswer/whyStrong/howToPersonalize) with margin to
+  // spare, while reserving less of the per-minute/per-day Groq token
+  // budget per call than the previous 5-question default needed.
+  const maxTokens = Number(process.env.LLAMA_MAX_TOKENS ?? 1800);
+  // 0 (greedy decoding) instead of the previous 0.7 — controlled testing
+  // showed temperature was the primary driver of non-Arabic token
+  // contamination in Arabic generations (26 disallowed tokens at 0.7 vs.
+  // 1 at 0, on the byte-identical prompt). All other parameters unchanged.
+  const temperature = Number(process.env.LLAMA_TEMPERATURE ?? 0);
   const timeoutMs = Number(process.env.LLAMA_TIMEOUT_MS ?? 30000);
 
   return {
     apiKey: apiKey!,
     baseUrl: baseUrl!,
     model: model!,
-    maxTokens: Number.isFinite(maxTokens) ? maxTokens : 2048,
-    temperature: Number.isFinite(temperature) ? temperature : 0.7,
+    maxTokens: Number.isFinite(maxTokens) ? maxTokens : 1800,
+    temperature: Number.isFinite(temperature) ? temperature : 0,
     timeoutMs: Number.isFinite(timeoutMs) ? timeoutMs : 30000,
   };
 }
@@ -219,9 +228,13 @@ function extractJsonPayload(raw: string): string {
 /**
  * Generates interview content for a validated request. Builds the prompt,
  * calls the Llama API, parses and validates the JSON response, and
- * automatically retries once (with a stricter prompt) if the response is
- * not valid JSON or doesn't match the expected shape. Throws
- * LlamaServiceError if it still fails after the retry.
+ * automatically retries (with a stricter prompt on subsequent attempts,
+ * up to MAX_GENERATION_ATTEMPTS total) if the response is not valid JSON,
+ * doesn't match the expected shape, or fails the content-quality checks in
+ * validateInterviewResponse (corrupted Unicode, mixed-language artifacts,
+ * duplicated questions/answers). The caller only ever sees a clean,
+ * fully validated response — never a partially broken one. Throws
+ * LlamaServiceError if it still fails after all retries.
  */
 export async function generateInterviewContent(
   request: GenerateInterviewRequest
@@ -260,7 +273,24 @@ export async function generateInterviewContent(
       continue;
     }
 
-    return validated.data;
+    // Shape is valid, but the text itself may still contain corrupted
+    // Unicode, mixed-language artifacts, or duplicated content.
+    // validateInterviewResponse sanitizes isolated foreign-word
+    // contamination in place (returned via `sanitized`) rather than
+    // discarding the whole response, and only fails validation — same
+    // reject-and-regenerate path as the other checks — when contamination
+    // is widespread or something structural (corrupted Unicode, a blank
+    // field, duplicates) is wrong.
+    const contentCheck = validateInterviewResponse(validated.data, request.language);
+    if (!contentCheck.valid) {
+      lastError = new LlamaServiceError(
+        "invalid_response",
+        "The AI provider returned content that failed quality validation."
+      );
+      continue;
+    }
+
+    return contentCheck.sanitized;
   }
 
   throw (

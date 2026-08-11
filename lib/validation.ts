@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { EXPERIENCE_LEVELS } from "@/types/interview";
+import { EXPERIENCE_LEVELS, INTERVIEW_LANGUAGES } from "@/types/interview";
 
 /**
  * Zod schemas for the Generate Interview API (POST /api/interview).
@@ -47,6 +47,7 @@ export const generateInterviewRequestSchema = z.object({
     .transform(sanitizeText)
     .optional(),
   regenerate: z.boolean().optional(),
+  language: z.enum(INTERVIEW_LANGUAGES).optional(),
 });
 
 export type GenerateInterviewRequestInput = z.infer<
@@ -61,14 +62,15 @@ export type GenerateInterviewRequestInput = z.infer<
 export const generatedQuestionSchema = z.object({
   question: z.string().trim().min(1),
   idealAnswer: z.string().trim().min(1),
-  tip: z.string().trim().min(1),
+  whyStrong: z.array(z.string().trim().min(1)).min(2).max(4),
+  howToPersonalize: z.array(z.string().trim().min(1)).min(2).max(4),
 });
 
 export const generateInterviewResponseSchema = z.object({
   summary: z.string().trim().min(1),
   questions: z
     .array(generatedQuestionSchema)
-    .length(5, "Expected exactly five interview questions."),
+    .length(3, "Expected exactly three interview questions."),
 });
 
 export type GenerateInterviewResponseOutput = z.infer<

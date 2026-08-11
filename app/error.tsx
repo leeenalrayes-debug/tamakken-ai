@@ -3,6 +3,7 @@
 import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * App Router route-level error boundary. Catches uncaught rendering
@@ -17,6 +18,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLanguage();
+
   if (process.env.NODE_ENV !== "production") {
     console.error(error);
   }
@@ -28,14 +31,14 @@ export default function Error({
       </div>
       <div className="space-y-1.5">
         <h1 className="text-lg font-semibold text-slate-900">
-          Something went wrong
+          {t.errorBoundary.heading}
         </h1>
         <p className="max-w-sm text-sm text-slate-500">
-          An unexpected error occurred. Please try again.
+          {t.errorBoundary.description}
         </p>
       </div>
       <Button onClick={reset} variant="outline" size="sm">
-        Try again
+        {t.errorBoundary.tryAgain}
       </Button>
     </div>
   );

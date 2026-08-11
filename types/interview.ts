@@ -19,26 +19,40 @@ export const EXPERIENCE_LEVELS = [
 
 export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
 
+/** Language the AI-generated content (questions and answers) should be written in. */
+export const INTERVIEW_LANGUAGES = ["en", "ar"] as const;
+
+export type InterviewLanguage = (typeof INTERVIEW_LANGUAGES)[number];
+
 export interface GenerateInterviewRequest {
   jobTitle: string;
   experienceLevel: ExperienceLevel;
   jobDescription?: string;
   /**
-   * When true, the prompt asks for a fresh set of 5 questions distinct
+   * When true, the prompt asks for a fresh set of 3 questions distinct
    * from any generated earlier in the session ("Continue Practice").
    * Optional and defaults to unset — the original single-generation flow
    * is unaffected.
    */
   regenerate?: boolean;
+  /**
+   * UI language at request time. Tells the AI what language to generate
+   * the summary, questions, and ideal answers in. Defaults to
+   * English when omitted.
+   */
+  language?: InterviewLanguage;
 }
 
 export interface GeneratedInterviewQuestion {
   question: string;
   idealAnswer: string;
-  tip: string;
+  /** 2-4 short bullet points explaining why the sample answer is strong. */
+  whyStrong: string[];
+  /** 2-4 short bullet points helping the candidate adapt the sample answer to their own experience. */
+  howToPersonalize: string[];
 }
 
-/** Exactly 5 questions, enforced by lib/validation.ts's response schema. */
+/** Exactly 3 questions, enforced by lib/validation.ts's response schema. */
 export interface GenerateInterviewResponse {
   summary: string;
   questions: GeneratedInterviewQuestion[];

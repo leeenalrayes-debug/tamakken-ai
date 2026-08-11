@@ -1,6 +1,9 @@
+"use client";
+
 import { memo } from "react";
 
 import Logo from "@/components/Logo";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Footer
@@ -9,11 +12,13 @@ import Logo from "@/components/Logo";
  * real or fake, beyond the brand itself.
  */
 function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer id="about" className="mt-20 border-t border-brand-900/[0.06] bg-cream-50 sm:mt-28">
       <div className="container mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row sm:px-8 lg:px-10">
         <Logo />
-        <p className="text-sm text-slate-500">Powered by Meta</p>
+        <p className="text-sm text-slate-500">{t.footer.poweredBy}</p>
       </div>
     </footer>
   );

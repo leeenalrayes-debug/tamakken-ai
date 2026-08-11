@@ -72,5 +72,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+
+  /*
+   * Arabic typography: swap in the self-hosted premium Arabic typeface
+   * (IBM Plex Sans Arabic, loaded in app/layout.tsx) only while the UI is
+   * in RTL/Arabic mode — English keeps the FONT_STACK above untouched.
+   * Falls back to Alexandria / Noto Sans Arabic / system fonts if the
+   * primary one is unavailable.
+   */
+  [dir="rtl"] body {
+    font-family: var(--font-arabic), Alexandria, "Noto Sans Arabic", Tahoma, Arial,
+      sans-serif;
+    /* Arabic is a connected script — extra Latin-style letter tracking
+       breaks glyph joining, so keep it neutral by default. */
+    letter-spacing: 0;
+    /* A touch more breathing room than Latin text needs, for elements
+       that don't already set their own line-height utility. */
+    line-height: 1.85;
   }
 }

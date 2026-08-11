@@ -4,6 +4,8 @@ import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BarChart3, Sparkles } from "lucide-react";
 
+import { useLanguage } from "@/lib/i18n";
+
 /**
  * GenerateIntro
  *
@@ -13,6 +15,7 @@ import { BarChart3, Sparkles } from "lucide-react";
  */
 function GenerateIntro() {
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLanguage();
 
   return (
     <motion.div
@@ -23,18 +26,17 @@ function GenerateIntro() {
     >
       <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-xs font-medium text-brand-700 shadow-sm">
         <Sparkles className="h-3 w-3" aria-hidden />
-        Personalized. Smart. Effective.
+        {t.generateIntro.badge}
       </div>
 
       <h2 className="text-3xl font-semibold leading-tight tracking-tight text-brand-900 sm:text-4xl">
-        Let&apos;s create your
+        {t.generateIntro.titleLine1}
         <br />
-        perfect interview session
+        {t.generateIntro.titleLine2}
       </h2>
 
       <p className="mt-4 max-w-sm text-base leading-relaxed text-slate-600">
-        Tell us about the role and we&apos;ll generate interview questions
-        tailored just for you.
+        {t.generateIntro.description}
       </p>
 
       {/* 3D-style illustration: stacked cards evoking "generated

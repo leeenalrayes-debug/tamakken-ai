@@ -5,12 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
 
 import PhoneMockup from "@/components/PhoneMockup";
-
-const FEATURES = [
-  "Tailored to your role",
-  "AI-generated questions",
-  "Expert interview tips",
-];
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Hero
@@ -22,6 +17,7 @@ const FEATURES = [
  */
 function Hero() {
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLanguage();
 
   return (
     <section id="top" className="relative overflow-hidden bg-cream-50">
@@ -43,22 +39,21 @@ function Hero() {
         >
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-xs font-medium text-brand-700 shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden />
-            AI-Powered Interview Preparation
+            {t.hero.badge}
           </div>
 
           <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight text-brand-900 sm:text-5xl lg:text-[3.4rem]">
-            Practice smarter.
+            {t.hero.titleLine1}
             <br />
-            Interview stronger.
+            {t.hero.titleLine2}
           </h1>
 
           <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600 sm:text-lg">
-            Generate personalized interview questions, ideal answers, and
-            expert interview tips tailored to your target role.
+            {t.hero.description}
           </p>
 
           <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            {FEATURES.map((feature) => (
+            {t.hero.features.map((feature) => (
               <li
                 key={feature}
                 className="flex items-center gap-1.5 text-sm font-medium text-slate-600"

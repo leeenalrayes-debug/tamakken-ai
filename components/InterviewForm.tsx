@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,17 +21,21 @@ import {
 import { Button } from "@/components/ui/button";
 import ErrorAlert from "@/components/ErrorAlert";
 import LoadingState from "@/components/LoadingState";
+import { useLanguage } from "@/lib/i18n";
+import type { Translations } from "@/lib/i18n";
 import { EXPERIENCE_LEVELS } from "@/types/interview";
 
-const interviewFormSchema = z.object({
-  jobTitle: z.string().trim().min(1, "Please enter a Job Title."),
-  experienceLevel: z.enum(EXPERIENCE_LEVELS, {
-    errorMap: () => ({ message: "Please select your experience level." }),
-  }),
-  jobDescription: z.string().max(5000).optional(),
-});
+function buildInterviewFormSchema(t: Translations) {
+  return z.object({
+    jobTitle: z.string().trim().min(1, t.form.validation.jobTitleRequired),
+    experienceLevel: z.enum(EXPERIENCE_LEVELS, {
+      errorMap: () => ({ message: t.form.validation.experienceLevelRequired }),
+    }),
+    jobDescription: z.string().max(5000).optional(),
+  });
+}
 
-export type InterviewFormValues = z.infer<typeof interviewFormSchema>;
+export type InterviewFormValues = z.infer<ReturnType<typeof buildInterviewFormSchema>>;
 
 interface InterviewFormProps {
   onGenerate: (values: InterviewFormValues) => void;
@@ -50,6 +55,8 @@ export default function InterviewForm({
   isLoading,
   submissionError,
 }: InterviewFormProps) {
+  const { t } = useLanguage();
+  const interviewFormSchema = useMemo(() => buildInterviewFormSchema(t), [t]);
   const {
     control,
     register,
@@ -90,10 +97,8 @@ export default function InterviewForm({
         />
 
         <CardHeader className="mb-7 space-y-1.5 p-0">
-          <CardTitle>Tell us about the role</CardTitle>
-          <CardDescription>
-            We&apos;ll tailor your interview questions to match it.
-          </CardDescription>
+          <CardTitle>{t.form.cardTitle}</CardTitle>
+          <CardDescription>{t.form.cardDescription}</CardDescription>
         </CardHeader>
 
         <CardContent className="p-0">
@@ -103,10 +108,10 @@ export default function InterviewForm({
             className="space-y-5 sm:space-y-6"
           >
             <div className="space-y-2">
-              <Label htmlFor="jobTitle">Job Title</Label>
+              <Label htmlFor="jobTitle">{t.form.jobTitleLabel}</Label>
               <Input
                 id="jobTitle"
-                placeholder="Software Engineer"
+                placeholder={t.form.jobTitlePlaceholder}
                 disabled={isLoading}
                 invalid={!!errors.jobTitle}
                 aria-describedby={displayedError ? errorId : undefined}
@@ -115,7 +120,7 @@ export default function InterviewForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="experienceLevel">Experience Level</Label>
+              <Label htmlFor="experienceLevel">{t.form.experienceLevelLabel}</Label>
               <Controller
                 control={control}
                 name="experienceLevel"
@@ -130,12 +135,12 @@ export default function InterviewForm({
                       invalid={!!errors.experienceLevel}
                       aria-describedby={displayedError ? errorId : undefined}
                     >
-                      <SelectValue placeholder="Select experience level" />
+                      <SelectValue placeholder={t.form.experienceLevelPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       {EXPERIENCE_LEVELS.map((level) => (
                         <SelectItem key={level} value={level}>
-                          {level}
+                          {t.experienceLevels[level]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -146,14 +151,14 @@ export default function InterviewForm({
 
             <div className="space-y-2">
               <Label htmlFor="jobDescription">
-                Job Description{" "}
+                {t.form.jobDescriptionLabel}{" "}
                 <span className="font-normal text-slate-400">
-                  (Optional)
+                  {t.form.optional}
                 </span>
               </Label>
               <Textarea
                 id="jobDescription"
-                placeholder="Paste the job description here..."
+                placeholder={t.form.jobDescriptionPlaceholder}
                 disabled={isLoading}
                 {...register("jobDescription")}
               />
@@ -168,10 +173,10 @@ export default function InterviewForm({
               className="w-full"
             >
               <Sparkles className="h-4 w-4" />
-              Generate Interview Questions
+              {t.form.submitButton}
             </Button>
 
-            {isLoading ? <LoadingState /> : null}
+            {isLoading ? <LoadingState message={t.loading.generating} /> : null}
           </form>
         </CardContent>
       </Card>

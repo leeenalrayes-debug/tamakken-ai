@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { useLanguage } from "@/lib/i18n";
 import type {
   ApiErrorResponse,
   GenerateInterviewRequest,
@@ -10,9 +11,6 @@ import type {
 import type { ApiResult, AsyncStatus } from "@/types/common";
 
 const INTERVIEW_ENDPOINT = "/api/interview";
-const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
-const NETWORK_ERROR_MESSAGE =
-  "Unable to reach the server. Please check your connection and try again.";
 
 export interface UseInterviewResult {
   status: AsyncStatus;
@@ -29,7 +27,7 @@ export interface UseInterviewResult {
   generate: (input: GenerateInterviewRequest) => Promise<void>;
   /**
    * Re-submits the last successful request's job title, experience level,
-   * and job description with `regenerate: true`, asking for five new
+   * and job description with `regenerate: true`, asking for three new
    * questions that don't repeat the previous set. No-op if nothing has
    * been generated yet.
    */
@@ -50,6 +48,7 @@ export interface UseInterviewResult {
  * can never overwrite a newer one.
  */
 export function useInterview(): UseInterviewResult {
+  const { t, locale } = useLanguage();
   const [status, setStatus] = useState<AsyncStatus>("idle");
   const [data, setData] = useState<GenerateInterviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +64,13 @@ export function useInterview(): UseInterviewResult {
       setError(null);
       setIsRegenerating(regenerating);
 
-      const result = await submitInterviewRequest(input);
+      // The AI-generated content (questions and answers) is generated
+      // directly in the current UI language — always the live locale at
+      // request time, not whatever it was when the role was first entered.
+      const result = await submitInterviewRequest(
+        { ...input, language: locale },
+        { generic: t.errors.generic, network: t.errors.network }
+      );
 
       // A newer request has since started; ignore this now-stale response.
       if (requestId !== requestIdRef.current) return;
@@ -79,7 +84,7 @@ export function useInterview(): UseInterviewResult {
       }
       setIsRegenerating(false);
     },
-    []
+    [t, locale]
   );
 
   const generate = useCallback(
@@ -124,7 +129,8 @@ export function useInterview(): UseInterviewResult {
 }
 
 async function submitInterviewRequest(
-  input: GenerateInterviewRequest
+  input: GenerateInterviewRequest,
+  fallbackMessages: { generic: string; network: string }
 ): Promise<ApiResult<GenerateInterviewResponse>> {
   let response: Response;
   try {
@@ -134,19 +140,19 @@ async function submitInterviewRequest(
       body: JSON.stringify(input),
     });
   } catch {
-    return { success: false, error: NETWORK_ERROR_MESSAGE };
+    return { success: false, error: fallbackMessages.network };
   }
 
   let body: unknown;
   try {
     body = await response.json();
   } catch {
-    return { success: false, error: GENERIC_ERROR_MESSAGE };
+    return { success: false, error: fallbackMessages.generic };
   }
 
   if (!response.ok) {
     const message =
-      isApiErrorResponse(body) && body.error ? body.error : GENERIC_ERROR_MESSAGE;
+      isApiErrorResponse(body) && body.error ? body.error : fallbackMessages.generic;
     return { success: false, error: message };
   }
 

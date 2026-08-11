@@ -4,26 +4,9 @@ import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ClipboardList, Sparkles, Repeat } from "lucide-react";
 
-const STEPS = [
-  {
-    icon: ClipboardList,
-    title: "Tell us about your role",
-    description:
-      "Enter your job title, experience level, and an optional job description.",
-  },
-  {
-    icon: Sparkles,
-    title: "Generate AI interview questions",
-    description:
-      "Receive five personalized interview questions, each with an ideal answer and an interview tip.",
-  },
-  {
-    icon: Repeat,
-    title: "Practice with confidence",
-    description:
-      "Review the questions, then continue practicing with a fresh set for the same role whenever you're ready.",
-  },
-];
+import { useLanguage } from "@/lib/i18n";
+
+const STEP_ICONS = [ClipboardList, Sparkles, Repeat];
 
 /**
  * HowItWorks
@@ -33,6 +16,11 @@ const STEPS = [
  */
 function HowItWorks() {
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLanguage();
+  const STEPS = t.howItWorks.steps.map((step, index) => ({
+    ...step,
+    icon: STEP_ICONS[index],
+  }));
 
   return (
     <section id="how-it-works" className="bg-cream-50 py-20 sm:py-28">
@@ -45,13 +33,13 @@ function HowItWorks() {
         >
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden />
-            Simple by design
+            {t.howItWorks.badge}
           </div>
           <h2 className="text-3xl font-semibold tracking-tight text-brand-900 sm:text-4xl">
-            How it works
+            {t.howItWorks.title}
           </h2>
           <p className="mt-4 max-w-sm text-base leading-relaxed text-slate-600">
-            Three steps between you and a sharper, more confident interview.
+            {t.howItWorks.subtitle}
           </p>
         </motion.div>
 

@@ -4,13 +4,9 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 import Logo from "@/components/Logo";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
-
-const NAV_LINKS = [
-  { label: "Home", href: "#top" },
-  { label: "How it Works", href: "#how-it-works" },
-  { label: "About", href: "#about" },
-];
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Header
@@ -21,6 +17,13 @@ const NAV_LINKS = [
  */
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLanguage();
+
+  const NAV_LINKS = [
+    { label: t.header.navHome, href: "#top" },
+    { label: t.header.navHowItWorks, href: "#how-it-works" },
+    { label: t.header.navAbout, href: "#about" },
+  ];
 
   function scrollTo(href: string) {
     setMobileOpen(false);
@@ -39,7 +42,7 @@ export default function Header() {
           type="button"
           onClick={() => scrollTo("#top")}
           className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50"
-          aria-label="Tamakken AI — back to top"
+          aria-label={t.header.logoAria}
         >
           <Logo />
         </button>
@@ -57,12 +60,13 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-4 md:flex">
+          <LanguageSwitcher />
           <Button
             onClick={() => scrollTo("#generate")}
             className="bg-brand-600 hover:bg-brand-700 active:bg-brand-800 shadow-brand-900/20"
           >
-            Start Practice
+            {t.header.startPractice}
           </Button>
         </div>
 
@@ -70,7 +74,7 @@ export default function Header() {
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
           className="flex h-9 w-9 items-center justify-center rounded-lg text-brand-700 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-label={mobileOpen ? t.header.closeMenu : t.header.openMenu}
           aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -85,17 +89,20 @@ export default function Header() {
                 key={link.href}
                 type="button"
                 onClick={() => scrollTo(link.href)}
-                className="rounded-lg px-2 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700"
+                className="rounded-lg px-2 py-2.5 text-start text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-700"
               >
                 {link.label}
               </button>
             ))}
           </nav>
+          <div className="mt-3 flex items-center justify-between gap-3 px-2">
+            <LanguageSwitcher />
+          </div>
           <Button
             onClick={() => scrollTo("#generate")}
             className="mt-3 w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800"
           >
-            Start Practice
+            {t.header.startPractice}
           </Button>
         </div>
       ) : null}

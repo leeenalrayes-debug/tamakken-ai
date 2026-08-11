@@ -2,6 +2,7 @@
 
 import { ChevronDown, Search, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * PhoneMockup
@@ -13,6 +14,8 @@ import Logo from "@/components/Logo";
  * static illustration, not a live embed of the real form.
  */
 export default function PhoneMockup() {
+  const { t } = useLanguage();
+
   return (
     <div className="relative mx-auto w-[260px] sm:w-[280px]">
       {/* Phone frame */}
@@ -37,30 +40,30 @@ export default function PhoneMockup() {
 
             <div>
               <p className="text-[15px] font-semibold leading-snug text-slate-900">
-                Tell us about the role
+                {t.form.cardTitle}
               </p>
               <p className="mt-0.5 text-[11px] leading-snug text-slate-500">
-                We&apos;ll tailor your questions to match it.
+                {t.form.cardDescription}
               </p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-[10px] font-medium text-slate-500">Job Title</p>
+              <p className="text-[10px] font-medium text-slate-500">{t.form.jobTitleLabel}</p>
               <div className="flex items-center rounded-lg border border-slate-200 bg-white px-2.5 py-2">
                 <Search className="h-3 w-3 text-slate-300" aria-hidden />
-                <span className="ml-1.5 text-[11px] text-slate-400">
-                  Software Engineer
+                <span className="ms-1.5 text-[11px] text-slate-400">
+                  {t.form.jobTitlePlaceholder}
                 </span>
               </div>
             </div>
 
             <div className="space-y-1">
               <p className="text-[10px] font-medium text-slate-500">
-                Experience Level
+                {t.form.experienceLevelLabel}
               </p>
               <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2.5 py-2">
                 <span className="text-[11px] text-slate-400">
-                  Select experience level
+                  {t.form.experienceLevelPlaceholder}
                 </span>
                 <ChevronDown className="h-3 w-3 text-slate-300" aria-hidden />
               </div>
@@ -68,19 +71,19 @@ export default function PhoneMockup() {
 
             <div className="space-y-1">
               <p className="text-[10px] font-medium text-slate-500">
-                Job Description{" "}
-                <span className="font-normal text-slate-400">(Optional)</span>
+                {t.form.jobDescriptionLabel}{" "}
+                <span className="font-normal text-slate-400">{t.form.optional}</span>
               </p>
               <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
                 <span className="text-[11px] leading-snug text-slate-400">
-                  Paste the job description here...
+                  {t.form.jobDescriptionPlaceholder}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center justify-center gap-1.5 rounded-lg bg-brand-600 py-2.5 text-[11px] font-semibold text-white shadow-sm shadow-brand-900/30">
               <Sparkles className="h-3 w-3" aria-hidden />
-              Generate Interview Questions
+              {t.form.submitButton}
             </div>
           </div>
         </div>
